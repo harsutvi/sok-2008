@@ -1,0 +1,238 @@
+---
+title: "Utfordring 1 Den Nordiske Modellen"
+subtitle: "Fakultet for biovitenskap, fiskeri og økonomi."
+author: "Kandidatnummer 16"
+date-format: "DD-MM-YYYY"
+format: pdf
+echo: false
+warning: false
+---
+
+## 
+
+```{r}
+#henter pakker
+library(tidyverse)
+library(rjstat)
+library(httr)
+library(ggrepel)
+library(rmarkdown)
+rm(list=ls())
+```
+
+```{r}
+#importerer til 1.1.1
+url <- "https://data.ssb.no/api/v0/no/table/04544/"
+
+query <- '{
+  "query": [
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "code": "Yrkesstatus",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "00"
+        ]
+      }
+    },
+    {
+      "code": "ContentsCode",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "FaktiskArbeidstid"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+hent_indeks.tmp <- url %>%
+  POST(body = query, encode = "json")
+
+df_arbeid <-  hent_indeks.tmp %>%
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble()
+```
+
+```{r}
+#importerer til 1.1.2
+women <- read_delim("https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/main/assets/women.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+```{r}
+#importerer til 1.2.1
+url <- "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/HLTH_SHA11_HF?format=JSON&lang=en&freq=A&unit=PC_CHE&icha11_hf=HF3&geo=BE&geo=BG&geo=CZ&geo=DK&geo=DE&geo=EE&geo=IE&geo=EL&geo=ES&geo=FR&geo=HR&geo=IT&geo=CY&geo=LV&geo=LT&geo=LU&geo=HU&geo=MT&geo=NL&geo=AT&geo=PL&geo=PT&geo=RO&geo=SI&geo=SK&geo=FI&geo=SE&geo=IS&geo=LI&geo=NO&geo=CH&geo=UK&geo=BA&geo=RS&time=2019"
+
+
+hent_indeks.tmp <- url %>%
+  POST(body = query, encode = "json")
+
+eurostat_che <- fromJSONstat(url)
+
+```
+
+```{r}
+#importerer til 1.2.1
+url <- "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/HLTH_SHA11_HF?format=JSON&lang=en&freq=A&unit=PPS_HAB&icha11_hf=TOT_HF&geo=BE&geo=BG&geo=CZ&geo=DK&geo=DE&geo=EE&geo=IE&geo=EL&geo=ES&geo=FR&geo=HR&geo=IT&geo=CY&geo=LV&geo=LT&geo=LU&geo=HU&geo=MT&geo=NL&geo=AT&geo=PL&geo=PT&geo=RO&geo=SI&geo=SK&geo=FI&geo=SE&geo=IS&geo=LI&geo=NO&geo=CH&geo=UK&geo=BA&geo=RS&time=2019"
+
+hent_indeks.tmp <- url %>%
+  POST(body = query, encode = "json")
+
+eurostat_pps <- fromJSONstat(url)
+```
+
+## Utfordring 1.1
+
+### 1.1.a
+
+```{r, fig.width = 8, fig.height=4}
+df_arbeid %>% 
+# lager plot arbeidstimer for menn og kvinner
+  ggplot(aes(x=år, y=value, color=kjønn)) +
+  geom_line(aes(group=kjønn)) +
+  labs(
+    x="",
+    y="Antall arbeidstimer",
+    title="Gjennomsnittlig arbeidstimer per uke blant kjønn (1996-2022)"
+  ) +
+
+# endrer aksene og label på årstall
+  scale_x_discrete(breaks = scales::pretty_breaks(n = 10)) +
+  ylim(30,40) +
+  theme_minimal()
+```
+
+I figur 1.1 ser vi forskjellen av arbeidstimer blant menn og kvinner. Dataen måler ukentlig gjennomsnitt fra 1996 til 2022. I 1996 ser vi gjennomsnittlig arbeidsuke på 39.5 timer for menn og 30.1 timer for kvinner. Den årlige endringen blandt kjønnene er relativt stabil, der vi ser en liten oppgang i arbeidstimer blant kvinner, og en større nedgang i timer blandt menn. I 2022 er den gjennomsnittlig arbeidstiden per uke for menn 36.1 timer og 31 timer for kvinner.
+
+I 1996 var forskjellen blandt kjønnene 9.4 timer, og i 2022 var den 5.1 timer. Selv om forskjellen i arbeidstimer har blitt betydelig mindre de siste 20 par årene, er forskjellen fremdeles stor i arbeidsmarkedsbildet.
+
+For å se på kjønnsforskjeller i arbeidstimer for menn og kvinner, må vi først se på hva som motiverer til å jobbe. Ved samfunnsøkonomisk teori tenkes det at en må bestemme mellom fritid, eller jobb. Ettersom jobb gir inntekt som kan brukes på konsum er det hva som vurderes i individets budsjettbetingelse. U(Konsum, Fritid) eller U(c, l). Tradisjonelt sett har kvinner en større rolle i husstanden enn hva mannen har hatt. Dette ser vi spesielt i familier med barn, selv om barnet har 2 omsorgspersoner, er det kvinnen som er hjemme med barnet mest gjennom permisjon, også ofte etter permisjonen skjer det en nedgang i arbeidstimer.
+
+![](images/f_k.png)
+
+I figuren over ser vi valg av arbeidstid med tre indifferenskurver, $U_ft$ som er fulltidansatt, $U_np$ som arbeidsledig og $U_pt$ som er deltidsansatt. Budsjettlinjen starter i punkt $E$ som har konsum nivå arbeidsfri inntekt. Det vil si at dersom man velger og ikke jobbe, vil man bli værende på det samme inntektsnivået. Eksempelvis vil en mor som har fått barn, være ute av arbeidsmarkedet i en lengre periode gjennom permisjonen. Selv etterpå har hun ikke like mye fritid som hun hadde før, og konsumet er også lavere, grunnet ekstra kostnader med en større familie. Grunnet mindre fritid som mor, vil være vanskelig å gå tilbake til samme arbeidstid i en fulltidsjobb (punkt $A$). Ofte vil det være lettere og ikke jobbe i det hele tatt, og heller bruke tiden på familien og huset. Hvertfall til barna blir i en mer voksen alder. Men så er det punk $B$. Dersom det skal være gunstig å begynne i en deltidsjobb, ser vi fra den stiplede streken at hun må oppgi mye fritid, for lite økning i konsum dersom hun blir på samme indifferenskurve. Derfor vil det ofte bare være interessant å jobbe deltids hvis hun kan gå opp til en indifferenskurve med høyere nytte, altså en indifferanskurve som ikke krysser arbeidsfri inntekt($E$) .
+
+### 1.1.b
+
+```{r, fig.width = 8, fig.height=4}
+# scatterplot med fem_emp_rate_0_2
+women %>% 
+  ggplot(aes(x = tot_full_rate, y = fem_emp_rate_0_2, label = country)) +
+  geom_point(color = "blue") +
+  geom_text_repel(size = 4) +
+  labs(x = "Uker med 100% støtte av ordinær lønn",
+       y = "Kvinners sysselsetting ",
+       title = "Permisjonsordning og sysselsetting med barn fra 0 til 2 år") +
+  ylim(0,100) +
+  theme_minimal()
+```
+
+Figuren over viser sysselsettingen blant kvinner i 24 OECD land når barnet er mellom 0 og 2 år. Dette sammenlignes med (uker permisjon \* lønn av total inntekt). Sett på figuren ser vi at de aller fleste landene ligger mellom 50% og 75% sysselsetting i perioden der barnet er 0-2år. Mens noen av landene ligger på rundt 25% eller under.
+
+```{r, fig.width = 8, fig.height=4}
+# scatterplot med fem_emp_rate_6_14
+women %>% 
+  ggplot(aes(x = tot_full_rate, y = fem_emp_rate_6_14, label = country)) +
+  geom_point(color = "red") +
+  geom_text_repel(size = 4) +
+  labs(x = "Uker med 100% støtte av ordinær lønn",
+       y = "Kvinners sysselsetting ",
+       title = "Permisjonsordning og sysselsetting med barn fra 6 til 14 år") +
+  ylim(0,100) +
+  theme_minimal()
+```
+
+Neste figur viser den samme sammenligningen av sysselsetting, bare med eldre barn fra 6 -14 år. Man ser i plottet at alle land har sysselsettingen over 50%, med noen land som nærmer seg 90%. Her ser vi at at landene som hadde veldig lav sysselsetting i den forrige grafen har tatt gjennomsnitts sysselsettingen.
+
+Sett på grafene ser vi at permisjonsordninger har en positiv effekt på å få kvinner tilbake til arbeid etter kort tid. Man ser også at permisjon lengre enn 40-50 uker kan ha en negativ effekt på hvor raskt sysselsettingsraten stiger. Likevell er det andre faktorer og ta hensyn til. I noen husholdninger kan det være nytte effektivt å sende barna i barnehage fra en ung alder. Eksempel på dettte er dersom nytten av konsum ved å jobbe er større en kostnaden for å ha barna i barnehage. Dersom staten ønsker mer sysselsetting blant kvinner kan de også gi ut subsidier slik at flere kan sende barna i barnehage fra ung alder. Ett annet tiltak er barnetrygd.
+
+### 1.1.c
+
+Høy yrkesdeltakelse blant norske kvinner og høye barnetall er viktig for den norske velferdsmodellens økonomiske bærekraft av flere grunner:
+
+Høy yrkesdeltakelse blant kvinner betyr at en større andel av befolkningen er aktivt involvert i arbeidslivet. Det vil bidra til en langt større og mer produktiv arbeidsstyrke. Det vil også gi økte skatteinntekter som er viktig for velferdsordningene i Norge. Når flere kvinner kommer ut i arbeidsmarkedet reduseres også bruken av offentlige stønader som sosialhjelp og annet. Dette gir igjen mer penger til overs.
+
+Høye barnetall er viktig for akkurat samme årsak, det styrker arbeidsstyrken som igjen styrker landets velferd. Men kanskje viktigere er en stor og ung befolkning. Flere land verden over befinner seg i en posisjon der fertilitetsraten er relativt lav, samtidig som den eldre befolkningen er høy. Det trengs en stor og ung befolkning for å finansiere pensjonssystemet.
+
+## Utfordring 1.2
+
+### 1.2.a
+
+```{r}
+eurostat_che <- eurostat_che %>% 
+  rename(country = "Geopolitical entity (reporting)") %>% 
+  select("country", "value") 
+
+eurostat_pps <- eurostat_pps %>% 
+  rename(country = "Geopolitical entity (reporting)") %>% 
+  select("country", "value") 
+```
+
+```{r}
+e_pps_che <- merge(eurostat_pps, eurostat_che, by = "country", suffixes = c("_pps", "_che"))
+
+```
+
+```{r, fig.width = 8, fig.height=4}
+#plotter
+e_pps_che %>% 
+  ggplot(aes(x = value_che, y = value_pps, label = country)) +
+  geom_point() +
+  geom_text_repel(size = 4) +
+  labs(x = "Prosentvis egenandel av total kostnad",
+       y = "Totale helsekostnader per innbygger",
+       title = "Sammenheng mellom helsetjenesteforbruk og egenandel") +
+  #lager korrelasjonslinje
+  geom_smooth(method = "lm", se = FALSE, color = "darkgreen") +  
+  theme_minimal()
+
+```
+
+I figuren over ser vi på en sammenheng mellom de totale helsekostnadene og egenandel som må betales. Y-aksen viser det totale forbruket i form av helsekostnader per innbygger, mens x-aksen viser hvor stor prosentandel av det samme beløpet individet betaler i egenandel. Sett i figuren ser vi at majoriteten av landene som betaler under 20% egenandel for helsetjenester bruker mer enn 3000€ per innbygger der Norge og Tyskland bruker over 4500€. lkke alle land viser en like sterk sammenheng. Deriblant Slovenia, Slovakia, Romania, Tsjekkia og Kroatia og Sveits Videre bruker de resterende landene under 3000€ i helsetjenester per innbygger, hvor de også betaler 20-40% i egenandel.
+
+Grafens grønne linje viser korrelasjonen mellom forbruket av helsetjenester per innbygger og størrelsen på egenandelen. Hvorvidt forholdet er kausalt, kan vi ikke avgjøre med sikkerhet, men sammenhengen virker sterk.
+
+### 1.2.b
+
+![](images/helse.png)
+
+Figuren over viser pris per enhet på y-aksen, og forbruket av helsetjenester per år på x-aksen. Budsjettlinjen, her kalt etterspørselen gjenspeiler betalingsvilligheten til konsumenten. I dette eksempelet er den totale kostnaden dekket av staten slik at pasientene ikke trenger og betale noe som helst for behandlingen. Gratis helsetjeneste viser i dette tilfellet å være lite effektivt ettersom med gratis helsehjelp blir hele tilbudet spist opp, selv om marginalnytten er lavere enn marginalkostnaden. Dette fører til ett stort dødvektstap. Dødvektstap er et tap på samfunnsøkonomisk effektivitet ettersom nytten er mindre enn kostnaden.
+
+![](images/helse2.png)
+
+Her fortsettes det med samme figur, med det blir innført en egenandel. Egenandelen er på 15%, og det flytter tilbudet av helsetjenester per år fra $M_1$ til $M_2$. Nå som $M_1$ er borte, ser vi at dødvektstapet blir mindre. I tillegg vil pasienter nå bruke helsetjenestene når det er nødvendig. Dette er fordi pasienten nå må betale for tjenesten, og dermed må marginalnytten være større enn hva den ellers ville vært.
+
+### 1.2.c
+
+Prisfølsomhet i etterspørsel er avgjørende. Vertikal etterspørselskurve støtter full forsikringsdekning. Avveiende insentiver og fordelingsmessige konsekvenser oppstår med økte egenandeler. Høyere egenbetalinger bør tilpasses prisfølsomheten, men dette utfordrer behovet for de mest trengende. Det handler om balansen mellom egenandeler, forbruk, og fordelingsvirkninger for en effektiv helsetjeneste.
+
+### 
+
+**Bruk av KI:**
+
+I denne oppgaven er det ikke brukt KI
+
+**Kildeliste:**
+
+-   Barr. Kapittel 3, 9-11
+
+-   Boeri og van Ours. Kapittel 5 og 7
+
+-   Forelesningsnotater
