@@ -1,0 +1,239 @@
+---
+title: "Utfordring 2 Den Nordiske Modellen"
+subtitle: "Fakultet for biovitenskap, fiskeri og økonomi."
+author: "Kandidatnummer 16"
+date-format: "DD-MM-YYYY"
+format: pdf
+echo: false
+warning: false
+---
+
+```{r}
+rm(list = ls())
+#henter pakker
+library(tidyverse)
+library(rjstat)
+library(OECD)
+library(gridExtra)
+library(grid)
+library(eurostat)
+```
+
+```{r}
+earn_mw_avgr2 <- get_eurostat("earn_mw_avgr2")
+
+lfsi_emp_a <- get_eurostat("lfsi_emp_a")
+
+```
+
+```{r}
+minstelønn <- earn_mw_avgr2 %>% 
+  filter(time == "2021-01-01", #årstall
+         indic_se == "MMW_MEAN_ME_PP", #gjennomsnitt
+         nace_r2 == "B-N") %>% #business economy
+  select("geo", "values")
+
+sysselsatt <- lfsi_emp_a %>% 
+  filter(time == "2021-01-01",#årstall
+         sex == "T",#alle kjønn
+         unit == "PC_POP",#prosentbasert verdi
+         age == "Y20-64",#befolkningsgruppe 20-64år
+         indic_em == "EMP_LFS") %>% #total employment
+  select("geo", "values")
+
+ss_mw <- merge(sysselsatt, minstelønn, by = "geo", suffixes = c("_ss", "_mw"))
+```
+
+```{r}
+ss_mw_plot <- ss_mw %>%
+  ggplot(aes(x = values_ss, y = values_mw)) +
+  geom_point(color="white") + # ta vekk "original-punkt"
+  geom_text(aes(label=geo),size=3) + # label = geo fører til at landsnavn blir brukt isteden for punkt
+  labs(x = "Sysselsatte i prosent av arbeidstyrken", 
+       y ="Minstelønn i prosent av gj. bruttoinntekt", 
+       title = "Figur 1.4",
+       caption = "Kilde: Eurostat") +
+  scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme_classic() +
+  geom_smooth(method=lm, se=FALSE) + # Korrelasjonslinje
+  geom_text(aes(x = max(values_ss), y = max(values_mw), #Plassering av korrelasjons-koeffisient 
+                label = paste("Korrelasjon:", round(cor(values_ss, values_mw), 2))),
+            hjust = 1, vjust = 1, size = 4, color = "red")
+
+ggsave("ss_mw_plot.png", dpi = 300, width = 7, height = 5)
+```
+
+## **1 - Minstelønn**
+
+#### Oppgave 1.1-
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{figur_1.1.png}
+  \captionof{figure}{Arbeidsmarked med fullkommen konkurranse}
+\end{figure}
+```
+Figur 1 viser forholdet mellom arbeid på horisontal akse og lønn på vertikal akse. På figuren ser vi to kurver; $L^D$ (tilbudet av arbeidskraft), og $L^S$ (etterspørselen for arbeidskraft).
+
+Den blå linjen reprensenterer tilbudet av arbeidskraft $L^S$. Den har en positiv helning som indikerer at jo høyere lønnsnivået er, desto flere ønsker og arbeide. Den oransje linjen representerer etterspørselen etter arbeidskraft $L^D$. Den har negativ helning som tyder på at jo høyere lønnsnivået er, desto færre arbeidere vil bedriften ansette.
+
+I et perfekt arbeidsmarked (fullkommen konkurranse) er det ingen reguleringer eller andre inngrep som påvirker dette forholdet. Markedet justerer seg til et punkt der etterspørselen møter tilbudet. Dette kalles likevektspunktet, og her er arbeidskraften arbeiderne tilbyr lik arbeidskraften arbeidsgiverne etterspør. Dette punktet ser vi i figuren på $L^*$ og $W^*$.
+
+I figur 1 så vi at alle som ønsket jobb, fikk det, men vi så også at lønnsnivået varierte blant arbeiderne. Dette er fordi arbeidere med høy produktivitet vil oppnå en høyere lønn enn de med lav produktivitet. Dette fører til inntektsulikhet i samfunnet, og inntektsforskjellen kan være så betydelig at enkelte ikke tjener nok til å imøtekomme grunnleggende levekostnader.
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{figur_1.2.png}
+    \captionof{figure}{Arbeidsmarked med minstelønn}
+\end{figure}
+```
+I figur 2 er det lagt på minstelønn over likevektspunktet for $L^S$ og $L^D$. Høyere lønn for arbeiderne gir dem mer nytte. Mer nytte fører at arbeidstilbudet øker, og dette ser vi på linje B . Økte kostnader for arbeidsgiver i form av lønn, fører til at de velger å ha færre arbeidere.
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{figur_1.3.png}
+    \captionof{figure}{Arbeidsmarked med monopsoni}
+\end{figure}
+```
+Figur 3 viser sammenhengen mellom lønn og arbeid i et ufullkomment arbeidsmarked med monopsonimakt. I modellen om monopsoni tas det utgangspunkt i at det kun er en eneste arbeidsgiver på markedet. Figuren er lik figur 1, men her er det også en MLC kurve. MLC (marginal labour cost) er bedriftens grensekostnad for å ansette en ekstra arbeider. Vi har ett nytt punkt der MLC krysser $L^D$. Fram til det punktet er det gunstig for arbeidsgiveren og ansette flere, men etterpå er grensekostnaden høyere enn grensenytten flere arbeidere vil medføre:
+
+$$
+MLC = MRP_L
+$$
+
+Effektivitetstapet i denne modellen er relativt stor fordi det er mange som vil jobbe men ikke får jobb, summen av A og B. For å bedre velferden og gi flere arbeidere jobb, kan vi innføre en minstelønn. Minstelønnen er satt rett under likevektspunktet $W < w^*$. Dette øker lønn fra $w^m$ til $w_1$ og arbeid fra $L^m$ til $L_1$. Effektivitetstapet har blitt mindre, og består nå bare av B. Vi kunne også økt minstelønnen til $W = w^*$, da ville effektivitetstapet forsvunnet fullstendig, og arbeid og lønn ville funnet likevekt.
+
+#### Oppgave 1.2-
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{ss_mw_plot.png}
+    \captionof{figure}{Sysselsetting og minstelønn}
+\end{figure}
+```
+Figur 4 viser sysselsettingsgraden av arbeidstyrken sammenlignet med minstelønnen i prosent av gjennomsnittlig bruttoinntekt. De aller fleste landene følger trenden til korrelasjonslinjen med at land med høy sysselsetting har lavere minstelønn. De aller fleste landene som har en sysselsettingsgrad på over 75% har også minstelønn under 45%. Alle landene som ligger under 70% sysselsettingsgrad har minstelønn mellom 45-50%. Også har vi ett par unntak som ligger langt unna korrelasjonskurven. Bulgaria og Latvia deriblant som ligger under og Polen, Portugal, Malta og Slovenia som ligger høyt på begge variablene.
+
+Figuren har korrelasjonsverdi på -0.41. Negativ korrelasjon betyr at høy minstelønn har en negativ effekt på sysselsetting, og høy sysselsetting har en negativ effekt på minstelønn. Det samsvarer ganske bra med påstanden om at minstelønn, og spesielt høy minstelønn kan føre til mer arbeidsledighet og dermed mer fattigdom.
+
+Korrelert forhold og kausalt forhold er to svært forskjellige ting. Korrelasjon er ett mål hvor sannsynlig det er at to hendelser har en sammenheng. Selv om du har ett mål med høy korrelasjon betyr ikke det at det er ett kausalt forhold, det kan være helt tilfeldig at hendelsene samsvarer. For at det skal være kausalt må det faktisk være en årsakssammenheng mellom de to forholdene. Det er vanskelig å trekke en konklusjon på at denne korrelasjonen er kausal fordi det er veldig mange drivkrefter i økonomien, det økonomiske bilde kan være veldig forskjellig fra land til land, selv om det er EU land. Eksempelvis kan det være fullkommen konkurranse i det ene landet vi ser på, mens det er markedsmakt i det andre, eller kanskje monopsoni.
+
+En måte å teste kausalt forhold kan være i bruke differences in differences. Differences in differences baserer seg på endringer over tid for to grupper. Der den ene gruppen er en kontrollgruppe, og den andre gruppen innfører en endring, f.eks en økonomisk reform. DiD-estimatet ser på forskjellen før og etter den økonomiske endringen ble innført for begge gruppene.
+
+```{r}
+TUD <- get_dataset("TUD")
+
+tud <- TUD %>% 
+  filter(Time == "2018") %>% #årstall 
+  select(ObsValue, LOCATION) %>% 
+  rename(Country = LOCATION)
+
+
+MIG_NUP_RATES_GENDER <- get_dataset("MIG_NUP_RATES_GENDER")
+
+mig <- MIG_NUP_RATES_GENDER %>% 
+  filter(GENDER == "TOT",#alle kjønn
+         RATE == "U_RATE",#arbeidsledighets rate
+         Time == "2018") %>% #årstall
+  select(BIRTH, COUNTRY, ObsValue) %>% 
+  rename(Country = COUNTRY) %>% 
+  pivot_wider(names_from = BIRTH, values_from = ObsValue)
+```
+
+```{r}
+mig_tud <- merge(mig, tud, by = "Country") %>% #samler data i ett datasett
+  mutate(
+    NB = as.numeric(NB),
+    FB = as.numeric(FB),
+    ObsValue = as.numeric(ObsValue)) %>% #verdiene er gitt i "chr" så jeg endrer til numeric
+  na.omit()#fjerner NA verdier
+```
+
+```{r}
+# To grafer i samme figur
+
+# Graf 1
+mt_nb <- mig_tud %>%
+  ggplot(aes(x = NB, y = ObsValue)) +
+  geom_point(color="white") + # ta vekk "original-punkt"
+  geom_text(aes(label=Country),size=3) + # label = geo fører til at landsnavn blir brukt isteden for punkt
+  labs(x ="Arbeidsledighetsraten(NB)", 
+       y = "Organisasjonsgraden", 
+       caption = "Kilde: OECD") +
+  scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme_classic() +
+  geom_smooth(method=lm, se=FALSE) + # Korrelasjonslinje
+  geom_text(aes(x = max(NB), y = max(ObsValue), #Plassering av korrelasjons-koeffisient 
+                label = paste("Korrelasjon:", round(cor(ObsValue, NB), 2))),
+            hjust = 1, vjust = 1, size = 4, color = "red")
+
+ggsave("mt_nb.png", dpi = 300, width = 7, height = 5)
+```
+
+```{r}
+# Graf 2
+mt_fb <- mig_tud %>%
+  ggplot(aes(x = FB, y = ObsValue)) +
+  geom_point(color="white") + # ta vekk "original-punkt"
+  geom_text(aes(label=Country),size=3) + # label = geo fører til at landsnavn blir brukt isteden for punkt
+  labs(x ="Arbeidsledighetsraten(FB)", 
+       y = "Organisasjonsgrad", 
+       caption = "Kilde: OECD") +
+  scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme_classic() +
+  geom_smooth(method=lm, se=FALSE) + # Korrelasjonslinje
+  geom_text(aes(x = max(FB), y = max(ObsValue), #Plassering av korrelasjons-koeffisient 
+                label = paste("Korrelasjon:", round(cor(FB, ObsValue), 2))),
+            hjust = 1, vjust = 1, size = 4, color = "red")
+ggsave("mt_fb.png", dpi = 300, width = 7, height = 5)
+```
+
+## **Utfordring 2.2 - Fagforeninger**
+
+#### Oppgave 2.1-
+
+**«Sterke fagforeninger reduserer velferden».**
+
+Fagforeninger har som mål å maksimere nytten til arbeiderne. Arbeidernes nytte vurderes ut i fra fritid og lønn. Arbeidsgiver ønsker å maksimere sin egen nytte velge sysselsettingsnivået som maksimerer profitten. Dermed vil sysselsetting og lønn være det som forhandles blant fagforeninger og arbeidsgivere.
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{figur_1.4.png}
+    \captionof{figure}{Lønnsforhandling med fagforening}
+  \captionof{figure}{}
+\end{figure}
+```
+Figur 5 viser sammenhengen mellom lønn og arbeid før og etter fagforeningen har gjort en forhandling. I dette eksempelet tas det utgangspunkt fullkomment marked, og at alle medlemmene av fagforeningen har lik reservasjonslønn, og er tilsvarende produktivitet for arbeid.
+
+Reservasjonslønnen finner vi på $w^*$, den skjærer i $L^D(w)$ til sysselsetting $L^*$. Ved lønnsforhandling med fagforening, øker lønnen til $w^M$ som skjærer i $U^F = L^D(w)$. Dette gir en lavere sysselsetting $L^M$. Det nye tilbudet på arbeid har nå en laverer sysselsetting(fra $L^*$ til $L^M$), men en høyere lønn(fra $w^*$ til $w^M$). Det kan diskuteres at økningen arbeidsledige fører til velferdstap
+
+#### Oppgave 2.2-
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{mt_nb.png}
+    \captionof{figure}{Organisasjonsgrad og arbeidsledighetsrate nasjonal}
+\end{figure}
+```
+I figur 6 ser vi at det er en svak positiv korrelasjon mellom arbeidsledighetsraten for innenlandsfødte og organisasjonsgraden. Vi ser også at de nordiske landene har både høy organisasjonsgrad, over 50% på alle, og relativt lav arbeidsledighetsrate. På resten av de europeiske landene ser vi at den negative korrelasjonen speiler landene bra.
+
+```{=tex}
+\begin{figure}[h]
+\centering
+  \includegraphics[width=\linewidth]{mt_fb.png}
+    \captionof{figure}{Organisasjonsgrad og arbeidsledighetsrate utlandsk}
+\end{figure}
+```
+I figur 7 ser vi at det er en svak negativ korrelasjon mellom arbeidsledighetsraten for utenlandsfødte og organisasjonsgraden. Her ser vi også høy organisasjondeltakelse blant de nordiske landene også for innenlandsfødte. Og de andre europeiske landene følger mønsteret med høyere organisasjonsdeltakelse, ved høyere arbeidsledighetsrate.
+
+Som vi så tidligere har de europeiske sterk organisasjonsdeltakelse, mye ettersom organisasjonsdeltakelse er relativt høy. Det betyr ikke nødvendigvis at dekningsgraden er lavere i de andre Europeiske landene, ettersom forholdet mellom organisasjonsdeltakelse og "excess coverage" kan variere mye fra land til land.
+
+Det kan tenkes at årsaken til at organisasjonsgraden er høyere blandt utenlandsfødte er fordi når de er med i en fagforening så har de i større grad mulighet til å påvirke deres arbeidsforhold, lønn og annet. Det kan også tenkes at utenlandsfødte har ulike preferanser enn innenlandsfødte, og siden de også er av en minoritet, føler de større verdi i å melde seg inn. For innenlandsfødte kan det på samme måte tenkes at preferansen er mer lik, og det eneste viktige er lønnsforhandling, som mange er med i gjennom "excess coverage".
