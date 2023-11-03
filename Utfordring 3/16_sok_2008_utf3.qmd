@@ -1,0 +1,466 @@
+---
+title: "Utfordring 3 Den Nordiske Modellen"
+subtitle: "Fakultet for biovitenskap, fiskeri og økonomi."
+author: "Kandidatnummer 16"
+date-format: "DD-MM-YYYY"
+format: pdf
+echo: false
+warning: false
+---
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(rjstat)
+library(httr)
+```
+
+```{r}
+url <- "https://data.ssb.no/api/v0/no/table/12441/"
+
+query <- '{
+  "query": [
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "0",
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "code": "NACE2007",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "00-99",
+          "01-03",
+          "05-09",
+          "10-33",
+          "35-39",
+          "41-43",
+          "45-47",
+          "49-53",
+          "55-56",
+          "58-63",
+          "64-66",
+          "68-75",
+          "77-82",
+          "84",
+          "85",
+          "86-88",
+          "90-99",
+          "00"
+        ]
+      }
+    },
+    {
+      "code": "Sykefraver2",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "Alt",
+          "E",
+          "L"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+hent_indeks.tmp <- url %>%
+  POST(body = query, encode = "json")
+
+df_egenmelding <-  hent_indeks.tmp %>%
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble()
+```
+
+## Utfordring 3.1
+
+#### 3.1.1
+
+**Tone har nytte av sammensatt konsum og fritid. Gå ut ifra at Tone sin nytte kan beskrives ved bruk av Cobb-Douglas funksjonen her nede**
+
+$$
+U(c, l) = c^{θ} \times l^{1-θ},
+$$
+
+**der** $θ = 0.5$
+
+**Tone har en arbeidsfri inntekt (**$m$**) lik 100 (i ti-tall kroner). Hun kan ikke velge sin arbeidstid fritt. Dersom Tone jobber, må hun jobbe 40 timer per uke. Hun kan maksimalt jobbe 60 timer per uke** $(l_0=60)$**. Dersom Tone ikke tar en jobb, har hun tilgang til stønad.**
+
+**Gå ut ifra at arbeidsmarkedet er «perfekt». Utled Tone sin statiske reservasjonslønn i disse to situasjonene: 1) stønaden er lik null, 2) stønaden er lik 100. Gjør rede for dine matematiske beregninger.**
+
+**Gi økonomisk intuisjon til hvorfor reservasjonslønna er ulik i disse to situasjonene. Illustrer grafisk. Du finne støtte til hvordan du kan lage grafer i dette dokumentet.**
+
+Beregner reservasjonslønn når stønad = 0 (m = 100)
+
+Tone's nytte når hun ikke jobber:
+
+$U(c,l) = c^{0.5} \times l^{0.5}$ **hvor** $c = 100$ **og** $l = 60$
+
+$$
+U = 100^{0.5} \times 60^{0.5}
+$$
+
+Tone's nytte når hun jobber(minimum 40 timer):
+
+$U(c,l) = c_{ft}^{0.5} \times l_{ft}^{0.5}$ **hvor** $c=40w + 100$ **og** $l=20$
+
+$$
+U_{ft} = (40w + 100) \times 20
+$$
+
+Hvis Tone er indifferent mellom og jobbe eller ikke, **må nyttenivåene være like**:
+
+$$
+100^{0.5}×60^{0.5}=(40w+100)^{0.5}×20^{0.5}
+$$
+
+Forenkler uttrykket:
+
+$$
+\sqrt{100} \times \sqrt{60} = \sqrt{40w + 100} \times \sqrt{20}
+$$
+
+$$
+10 \times 2\sqrt{15} =  \sqrt{20}\times \sqrt{20} \sqrt{2w + 5}
+$$
+
+$$
+20\sqrt{15} = 20\sqrt{2w+5}
+$$
+
+$$
+\sqrt{15} = \sqrt{2w +5}
+$$
+
+Løser for w:
+
+$$
+15 = 2w + 5
+$$
+
+$$
+w = 5
+$$
+
+Beregner reservasjonslønn med stønad (m + s = 200):
+
+Tone's nytte når hun ikke jobber:
+
+$U_s(c,l) = c^{0.5} \times l^{0.5}$ **hvor** $c = 200$ **og** $l = 60$
+
+$$
+U_s = 200^{0.5} \times 60^{0.5}
+$$
+
+Tone's nytte når hun jobber(minimum 40 timer):
+
+$U(c,l) = c_{ft}^{0.5} \times l_{ft}^{0.5}$ **hvor** $c=40w + 100$ **og** $l=20$
+
+$$
+U_{ft} = (40w + 100) \times 20
+$$
+
+Hvis Tone er indifferent mellom og jobbe eller ikke, **må nyttenivåene være like**:
+
+$$
+200^{0.5} \times 60^{0.5} = (40w_s + 100)^{0.5} \times 20^{0.5}
+$$
+
+Forenkler uttrykket:
+
+$$
+\sqrt{200} \times \sqrt{60} = \sqrt{40w_s + 100} \times \sqrt{20}
+$$
+
+$$
+10\sqrt2 \times \sqrt2 \times \sqrt{30} = \sqrt{20} \times \sqrt{20} \times \sqrt{2w_s + 5}
+$$
+
+$$
+20\sqrt{30} = 20\sqrt{2w_s + 5} | \div 20
+$$
+
+Løser for w:
+
+$$
+30 = 2w_s +5
+$$
+
+$$
+w_s = 12.5
+$$
+
+Ligningene over løser verdien $w = 5$ og $w_s = 12.5$. Verdien til $w$ er reservasjonslønnen Tone har uten stønad, mens $w_S$ reservasjonslønnen Tone har dersom stønad = 100. Reservasjonslønnen er den minste lønnen som gjør Tone indifferent i valget mellom å jobbe eller ikke. Siden stønaden er positiv (${m +s > m}$) , vil nyttenivået når Tone ikke jobber være høyere, og for at hun da skal være indifferent til å jobbe, må reservasjonslønnen ha lik nytte: $U_s = U_{ft}$.
+
+```{r}
+l_1 <- seq(0, 60, by = .01) 
+U0 <- sqrt(100) * sqrt(60)#Tones nyttenivå uten stønad
+U1 <- sqrt(200) * sqrt(60) #Tones nyttenivå med stønad
+
+df <- data.frame(l_1)
+
+#lag aksen for tegningen
+
+axes_1 <- ggplot(df, aes(l_1))+
+  labs(x="Fritid(l)", y="Konsum i 10-tall(c)") +
+  theme(axis.title = element_text(size = 10),
+        plot.title = element_text(size = 10),
+        panel.background = element_blank(), # hvit bakgrunn
+        axis.line = element_line(colour = "black"), # sett inn akselinjer
+        axis.title.x = element_text(hjust = 1),
+        axis.title.y = element_text(angle = 0, vjust = 1, hjust=1))+ # juster labels på aksene  
+  coord_fixed(ratio = 1)+ # lik skala for x og y aksen
+  scale_x_continuous(limits = c(0, 70), expand = c(0, 0))+
+  scale_y_continuous(limits = c(0, 1000), expand = c(0, 0))+ # begrense aksene
+  coord_fixed(ratio = (70 - 0) / (1000 - 0)) 
+
+axes_2 <- axes_1 + 
+  theme(axis.ticks = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank())
+
+
+```
+
+```{r}
+# nyttefunkjsonen som brukes U=c^.5x l^.5 (Cobb-Douglas)
+
+# vi angir noen indifferenskurver
+I_0 <- function(l_1) (U0^2)/(l_1)  # bytt ut U0 mot et relevant nivå på nytten
+I_1 <- function(l_1) (U1^2)/(l_1) # bytt ut U1 mot et relevant nivå på nytten
+```
+
+```{r}
+# Reservasjonslønn uten stønad
+wr0 <- function(l_1) {
+  return(400 - 5 * l_1) #sett inn tall for skjærningspunkt med Y-akselen og koeffisienten til l_1
+}
+
+# Reservasjonslønn med stønad
+wr1 <- function(l_1) {
+  return(850 - 12.5 * l_1) #sett inn tall for skjærningspunkt med Y-akselen og koeffisienten til l_1
+}
+```
+
+```{r}
+figur_2 <- axes_1+
+  stat_function(df,
+                fun=I_0,
+                mapping = aes() #Indifferansekurve 0
+  )+
+  stat_function(df,
+                fun=I_1,
+                mapping = aes() #Indifferansekurve 1
+  )+
+  annotate("text",
+           x=65,
+           y=110,
+           label=expression(U[0]))+ #Navn indifferansekurve 0
+  annotate("text",
+           x=65,
+           y=210, 
+           label=expression(U[1]))+#Navn indifferansekurve 1
+    annotate("text",
+           x=3,
+           y=350,
+           label=expression(wr[m]),
+           color ="orange")+#Navn reservasjonslønn uten stønad
+  annotate("text",
+           x=4,
+           y=750,
+           label=expression(wr[m+s]),
+           color ="blue")+#Navn reservasjonslønn med stønad
+  geom_segment(aes(x = 0, y = wr0(0), xend = 60, yend = wr0(60)), color="orange") + #Kurve som beskriver reservasjonslønn da stønad == 0
+  geom_segment(aes(x = 0, y = wr1(0), xend = 60, yend = wr1(60)), color="blue") + #Kurve som beskriver reservasjonslønn da stønad == 100
+  geom_segment(aes(x=0, y=60, xend=100, yend=60))+ #Budsjettbetingelsen ved l0 = 60 (vertikal linje)
+  geom_segment(aes(x=0, y=100, xend=60, yend=100), linetype="dashed")+ #Arbeidsfri inntekt
+  geom_segment(aes(x=0, y=200, xend=60, yend=200), linetype="dashed", color="red")+#Identifiser heltidsarbeid.
+  geom_segment(aes(x=60, y=0, xend=60, yend=200), linetype="dashed")+
+  annotate("text",x=3,y=120, 
+           label="m")+ 
+  annotate("text",x=5,y=220,
+           label="m + s", color="red")+
+  geom_segment(aes(x=20, y=0, xend=20, yend= 600), linetype="dashed", color = "darkgreen")+
+  annotate("text",x=22,y=330,
+           label="A", color="orange")+
+  annotate("text",x=22,y=630,
+           label="B", color="blue")
+
+figur_2
+```
+
+I figuren ovenfor ser vi på forholdet mellom Tone's konsum og fritid. I modellen tar vi utgangspunkt i at arbeidsmarkedet er perfekt, og at Tone må jobbe minimum 40 timer dersom hun ønsker å jobbe. Kurven $wr_m$, representerer Tone's reservasjonslønn uten stønad(stønad=0), og $wr_{m+s}$ representerer Tone's reservasjonslønn med stønad(stønad = 100). Reservasjonslønnen er den minste lønnen Tone er villig til å godta dersom hun bestemmer seg for å jobbe 40 timer i uken. Når hun kun har arbeidsfri inntekt er reservasjonslønnen 5, mens når man kan motta stønad dersom man ikke jobber er reservasjonslønnen 12.5.
+
+Indifferenskurvene representerer Tone's preferanser når det gjelder å balansere arbeidstid og fritid for å oppnå ett gitt konsum. $U_0$ starter ved en arbeidsfri inntekt m = 100 og skjærer i punkt $A$. I punkt $A$ arbeider Tone 40 timer, og har 300 i konsum (i 10-tall kroner). Punkt $A$ er det eneste punktet på nyttenivået der Tone er indifferent mellom å jobbe eller ikke.
+
+$U_1$ starter i arbeidsfri inntekt + stønad = 200 og skjærer i punkt $B$. I punkt $B$ arbeider Tone også 40 timer, mens her har hun 800 i konsum(i 10-tall kroner). Siden Tone må jobbe minimum 40 timer i uken er punkt $B$ det eneste punktet det hvor hun er indifferent mellom å jobbe eller ikke.
+
+#### 3.1.2
+
+**Arbeidsmarkedet er sjelden perfekt. Forklar hvilke effekter trygd har på arbeidsmarkedet da arbeidsmarkedet er ufullkomment.**
+
+Trygd er et velferdsordning som skal sikre de som ikke har muligheten til å arbeide skal ha en akseptabel inntekt. Trygd kan være ønsket pga. yrkesskader, kronisk sykdom, arbeidsledighet, uføre eller lignende. I Norge har vi flere forskjellige trygdeordninger gjennom folketrygden, som f.eks. uføretrygd, dagpenger, sykepenger arbeidsavklaringspenger og mer. Sett på ett arbeidsmarked som er ufullkomment, vil trygd ha ulike effekter på markedet.
+
+1.  Jobbsøk-effekt:
+
+    Trygd øker den dynamiske reservasjonslønnen til de som mottar støtte. Dette kommer av at trygden minker alternativkostnadene arbeiderne har ved å ikke jobbe. Med andre ord, når jobbsøkere mottar trygdeytelser, er de mer selektive på valget av arbeid, og vil avvise jobbtilbud som ikke møter deres krav. Dette forlenger perioden arbeidssøkerne går arbeidsledig.
+
+2.  Lønningseffekt:
+
+    Trygdeytelser gir arbeiderne mer markedsmakt i forhandling av lønn. Dette kan gjøre at arbeidstakere kan kreve høyere lønn i lønnsforhandling. På den ene siden fører dette til at arbeidere får høyere lønn, men det kan også føre til at arbeidsgivere velger å ansette færre, ettersom grensekostnaden øker med lønningsnivået.
+
+3.  Rettighets-effekt:
+
+    Retten til trygd kommer av tidligere arbeid, de som har arbeidet lenge har en bedre trygdeordning enn de som har jobbet lite, og de som ikke har jobbet i det hele tatt, har ikke rett til trygd. Dette gjør at trygdeytelser kan være en faktor som får flere mennesker til å delta i arbeidsmarkedet. Dermed vil yngre arbeidstakere har ett sterkt insentiv for å få en god jobb, mens eldre arbeidssøker som har trygdegoder, vil kunne ha en lavere jobbsøk intensivitet.
+
+Sett på de forskjellige effektene har trygd stor innvirkning på arbeidsmarkedet. Mens det kan hjelpe arbeidstakere i arbeidsledighet og gi en bedre økonomisk sikkerhet, er det også viktig at den hjelpen som gis motiverer alle som kan tilbake i arbeid.
+
+#### Utfordring 3.2
+
+#### **a)**
+
+**Studer teksten i sangen *Tredagern* av Gatas parlament. Bruk data fra denne [tabellen](https://www.ssb.no/statbank/table/12441/) for å vise hvordan egenmeldinger i næringen som sangpersonen jobber i (la oss si industri) har utviklet siden sangen ble utgitt. Lag en figur og diskuter dine funn.**
+
+```{r}
+df_plot <- df_egenmelding %>% 
+  filter(kjønn=="Begge kjønn") %>% #filtrer data som skal plottes
+  filter(`type sykefravær`=="Egenmeldt") %>% 
+  filter(`næring (SN2007)`=="Industri") %>% 
+  mutate(år = as.numeric(år)) #endrer fr chr til num
+```
+
+```{r}
+df_plot %>% 
+  ggplot(aes(x = år, y = value)) +
+  geom_line() + 
+  labs(x="",
+       y="Sykefraværsprosent",
+       title="Sykefravær med egenmelding for lønnstakere i industrinæringen",
+       caption="Kilde: SSB tabell 12441") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +#legger til prosent på akseteksten
+  scale_x_continuous(breaks = scales::pretty_breaks(12)) +#hvor ofte årstall skal vises
+  theme_bw()
+```
+
+Sangen "Tredagern" av Gatas parlament ble utgitt i 2001. Budskapet i sangen kommer tydelig fram, og det er å bruke 3 dager fri med egenmelding til å slappe av, og nyte tilværelsen. I figuren ovenfor ser vi data fra SSB som viser bruken av egenmelding i industrinæringen mellom 2001-2022. Y-aksen viser sykefraværsprosenten med egenmelding, mens x-aksen viser den årlige endringen. Sett på figuren ser vi en økende trend over tid, med svingninger ned i 2003, 2010 og 2019. I 2020-2022 ser vi effekten på corona pandemien. Det bør merkes at økningen i egenmeldinger de siste 21 årene kun har økt noen promille, fra 0.8% i 2001 til 1.4% i 2022, likevell ser vi en klar trend på at bruken av egenmeldinger har økt over tid, som betyr at Gatas parlament kanskje var inne på noe.
+
+```{r}
+I_3 <- function(l_1) (189.73^2)/(l_1) 
+
+figur_3 <- axes_1+
+  stat_function(df,
+                fun=I_3,
+                mapping = aes() #Indifferansekurve 2
+  )+
+  
+  
+  annotate("text",
+           x=65, 
+           y=600, 
+           label=expression(u[2]))+
+  annotate("text",
+           x=22, 
+           y=20, 
+           label=expression(L[ft]))+
+  annotate("text",
+           x=62, 
+           y=20, 
+           label=expression(l[0]))+
+  annotate("text",
+           x=42,
+           y=620,
+           label= expression(K[100]),
+           size=3)+
+  geom_segment(aes(x = 0, y = wr1(0), xend = 60, yend = wr1(60)))+ 
+  
+  geom_segment(aes(x=60, y=0, xend=60, yend=100))+ 
+  
+  geom_segment(aes(x=0, y=100, xend=60, yend=100), linetype="dashed")+ 
+  annotate("text", x = 2, y = 120, label = "m")+
+  
+  geom_segment(aes(x=60, y=0, xend=60, yend=100))+
+  geom_segment(aes(x=60, y=200, xend=60, yend=600), color="darkgray", linewidth=2)+
+  geom_segment(aes(x=60, y=100, xend=60, yend=200), color="black", linewidth=2)+
+  geom_segment(aes(x=20, y=600, xend=60, yend=600), linetype="dashed")+
+  geom_segment(aes(x=20, y=0, xend=20, yend=600), linetype="dashed", color="red")
+```
+
+```{r}
+I_2 <- function(l_1) (127^2)/(l_1)
+
+figur_4 <- figur_3 +
+   stat_function(df,
+                fun=I_2,
+                mapping = aes())+
+  
+  annotate("text",
+           x=65, 
+           y=300, 
+           label=expression(u[3]))+
+  annotate("text",
+           x=62,
+           y=200,
+           label= expression(K[20]),
+           color="red",
+           size=3)+
+  geom_segment(x = 20, y = 600, xend = 60, yend =200, color = "red")
+```
+
+#### b)
+
+**Beskriv disinsentivproblemet knyttet til sangen ved hjelp av økonomisk teori du har lært på dette kurset. Bruk diagram i din besvarelse. Gjør rede for antakelsene i modellen. Husk å forklare økonomisk intuisjon.**
+
+I sangen "Tredagern" kan det tolkes at Gatas parlament gjennom lyrikk ufarliggjør bruken av egenmeldinger for å sykemelde seg. Dette skyldes at arbeidere kan levere egenmelding uten å konsultere en lege, og sykelønnen har en kompensasjonsgrad på 100%.
+
+Nyttefunksjonen er gitt ved:
+
+$$
+U = c^{1-\sigma} * l^{\sigma}
+$$
+
+hvor $U$ er nytte, $c$ er konsum, $l$ er fritid og $\sigma$ er sykdomsindeks. Sykdomsindeksen er ett tall mellom 0 og 1, og den representerer hvor syk individet er. Dette gjør at individet vil ha ulike preferanser på fritid og konsum basert på sykdomsindeksen, med lav sykdomsindeks vil individet ha høyere preferanse for konsum, mens når sykdomsindeksen er høy vil preferansen være høyere for fritid.
+
+I figuren under ser vi en generisk modell som viser lønnen individet oppnår i $L_{ft}$ når individet er frisk og jobber fulltid. Siden det er 100% kompensasjonsgrad ($K_{100}$) ved sykemelding vil inntekten til ett individ som er sykemeldt bli kompensert i $l_0 = u_s$ når individet er 100% sykemeldt. Med kompensasjonsgrad på 100% på egenmelding vil individet oppnå ett mye høyere nyttenivå, der det oppnås lik konsum, men individet har full fritid. Dette er disinsentivet vokalisten synger om i "Tredagern", dersom ett friskt individ tar egenmelding og får nyttenivå i $u_2$.
+
+```{r}
+figur_3
+```
+
+#### c)
+
+**Hvilket virkemiddel ville du som samfunnsøkonom foreslått for å redusere disinsentiveffekten i sangen? Bruk økonomisk teori du har lært på dette kurset til å svare på dette spørsmålet. Bruk diagram i din besvarelse. Husk å forklare økonomisk intuisjon.**
+
+Sangteksten sammenligner egenmelding med 3 dager ekstra fri for å slappe av og lade batteriene. Når sykefraværet ikke fører til noe økonomisk tap for individet, vil sykemeldingsgraden være høyere. Dersom vi reduserer kompensasjonsgraden ved sykemelding vil det gi individet ett lavere konsum dersom individet er sykemeldt.
+
+I figuren under ser vi hva som skjer dersom kompensasjonsgraden reduseres. Jeg har satt kompensasjonsgraden på 20%, der vil individet jobbe ca. 20 timer i en 50% stilling, $K{20}$ krysser med $u_3$. Vi ser også at individet nå har ett lavere nyttenivå $u_3$, enn når det var 100% kompensasjonsgrad $u_2$.
+
+```{r}
+figur_4
+```
+
+En lavere kompensasjonsgrad kan føre til at flere individer velger å arbeide, selv om de er litt syke. Dette vil øke arbeidsstyrken, men det kan også føre til at de som er veldig syke også velger å jobbe. Det kan ha konsekvenser både på individenes livskvalitet (utbrent). Eksempelvis ville en lav kompensasjongrad vært problematisk under koronapandemien, hvis fokuset er å holde smittespredningen lav. Det er med andre ord viktig å utarbeide slike ordninger på fornuftig vis. Med hensikt å redusere sykefravær fra de som egentlig kan jobbe, men samtidig ikke gi ett for stort tap av konsum, til de som trenger stønaden når de er skikkelig syk.
+
+### Appendix:
+
+<https://www.regjeringen.no/no/tema/pensjon-trygd-og-sosiale-tjenester/innsikt/trygd/id2402564/>
+
+<https://www.ssb.no/statbank/table/12441/>
+
+<https://genius.com/Gatas-parlament-tredagern-lyrics>
+
+[Barr N. The Economics of the Welfare State, 6th Edition, Oxford University Press](https://www.akademika.no/9780198748588/pedagogikk-og-samfunnsvitenskap/samfunnsokonomi/economics-welfare-state)
+
+[Boeri, T. & van Ours, J. The Economics of Imperfect Labor Markets, Third Edition, Princeton](https://www.akademika.no/economics-imperfect-labor-markets-third-edition/ours-tito-boeri-jan-van/9780691208824)
+
+Forelesnings- og seminarnotater
